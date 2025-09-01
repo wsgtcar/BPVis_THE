@@ -235,7 +235,7 @@ with st.sidebar.expander("DIN 4108 Settings", expanded=True):
     limit_C, cap_DH, season_start, season_end = limits_for_zone_and_use(cz, use_type_global)
 
 
-st.markdown("---")
+st.sidebar.markdown("---")
 
 if not up:
     st.info("Upload a thermal workbook. Sample files are available at the bottom of the page.")
@@ -419,6 +419,7 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
+
 
 
 
