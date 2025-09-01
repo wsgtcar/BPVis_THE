@@ -221,7 +221,7 @@ st.sidebar.markdown("---")
 
 st.sidebar.markdown("### Upload Data")
 up = st.sidebar.file_uploader(
-    "Thermal workbook (.xlsx)", type=["xlsx"],
+    "Upload Excel File", type=["xlsx"],
     help="One sheet per room with columns: timestamp + t_op_C OR doy + hour + t_op_C"
 )
 st.sidebar.markdown("---")
@@ -420,6 +420,7 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
+
 
 
 
