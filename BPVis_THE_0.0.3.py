@@ -14,13 +14,13 @@ with col2:
     if logo_path.exists():
         st.image(str(logo_path), width=900)
 
-st.title("Summer Overheating")
-st.title("DIN 4108-2")
-
 
 st.sidebar.image("Pamo_Icon_Black.png", width=80)
-st.sidebar.write("## BPVis Therm")
+st.sidebar.write("## BPVis THE")
 st.sidebar.write("Version 0.0.1")
+
+st.title("Summer Overheating")
+st.title("DIN 4108-2")
 
 COLOR_OK = "#22c55e";
 COLOR_BAD = "#ef4444";
@@ -417,6 +417,7 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
+
 
 
 
