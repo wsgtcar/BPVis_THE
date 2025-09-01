@@ -5,7 +5,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-st.set_page_config(page_title="BPVis Therm — DIN 4108 Comfort", page_icon="Pamo_Icon_White.png", layout="wide")
+st.set_page_config(page_title="WSGT_BPVis_THE 0.0.1", page_icon="Pamo_Icon_White.png", layout="wide")
 
 
 col1, col2 = st.columns(2)
@@ -417,5 +417,6 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
+
 
 
