@@ -239,7 +239,7 @@ with st.sidebar.expander("DIN 4108 Settings", expanded=False):
 st.sidebar.markdown("---")
 
 if not up:
-    st.info("Upload a thermal workbook. Sample files are available at the bottom of the page.")
+    st.write("### ← Please upload data on sidebar")
 else:
     # Load and normalize
     try:
@@ -419,6 +419,7 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
+
 
 
 
