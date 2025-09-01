@@ -217,6 +217,8 @@ if Path('sample_thermal_database.xlsx').exists():
     st.sidebar.download_button('Download Excel Template', data=Path('sample_thermal_database.xlsx').read_bytes(),
                          file_name='sample_thermal_database.xlsx')
 
+st.markdown("---")
+
 st.sidebar.header("Upload")
 up = st.sidebar.file_uploader(
     "Thermal workbook (.xlsx)", type=["xlsx"],
@@ -417,6 +419,7 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
+
 
 
 
