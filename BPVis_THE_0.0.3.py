@@ -226,11 +226,11 @@ up = st.sidebar.file_uploader(
 )
 st.sidebar.markdown("---")
 st.sidebar.markdown("### Project Information")
-with st.sidebar.expander("Project Data", expanded=True):
+with st.sidebar.expander("Project Data", expanded=False):
     proj_name = st.text_input("Project Name", "Example Building — Comfort")
     use_type_global = st.selectbox("Default Use Type (fallback)", ["Residential", "Non-Residential"], index=1)
 
-with st.sidebar.expander("DIN 4108 Settings", expanded=True):
+with st.sidebar.expander("DIN 4108 Settings", expanded=False):
     cz = st.selectbox("Climate Zone (DIN 4108-2)", ["A", "B", "C"], index=1)
     # derive defaults from selected zone + global use type (override option removed)
     limit_C, cap_DH, season_start, season_end = limits_for_zone_and_use(cz, use_type_global)
@@ -419,6 +419,7 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
+
 
 
 
