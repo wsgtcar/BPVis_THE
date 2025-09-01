@@ -387,7 +387,6 @@ else:
 
     st.markdown("---")
     with st.sidebar:
-        st.markdown("---")
         if st.button("Save Project", use_container_width=True):
             wb = load_xlsx(up.getvalue())
             proj = pd.DataFrame({"Key": ["Project_Name", "Climate_Zone_4108"],
@@ -420,6 +419,7 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
+
 
 
 
