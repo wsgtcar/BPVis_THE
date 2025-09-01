@@ -224,6 +224,7 @@ up = st.sidebar.file_uploader(
     "Thermal workbook (.xlsx)", type=["xlsx"],
     help="One sheet per room with columns: timestamp + t_op_C OR doy + hour + t_op_C"
 )
+st.sidebar.markdown("---")
 st.sidebar.markdown("### Project Information")
 with st.sidebar.expander("Project", expanded=True):
     proj_name = st.text_input("Project Name", "Example Building — Comfort")
@@ -419,6 +420,7 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
+
 
 
 
