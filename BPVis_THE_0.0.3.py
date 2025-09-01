@@ -310,7 +310,7 @@ else:
         origin="lower",
         aspect="auto",
         color_continuous_scale="thermal",
-        zmin=16, zmax=36,
+        zmin=16, zmax=30,
         title="Operative Temperature (°C)",
         labels=dict(x="Day of Year", y="Hour", color="°C")
     )
@@ -417,4 +417,5 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
+
 
