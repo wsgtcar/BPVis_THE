@@ -212,9 +212,9 @@ def compute_4108(df_room: pd.DataFrame, limit_c: float, season_start: str, seaso
 
 # ------------------ Sidebar ------------------
 
-if Path('templates\sample_thermal_database.xlsx').exists():
+if Path('sample_thermal_database.xlsx').exists():
     st.sidebar.header("Download Template")
-    st.sidebar.download_button('Download Excel Template', data=Path('templates\sample_thermal_database.xlsx').read_bytes(),
+    st.sidebar.download_button('Download Excel Template', data=Path('sample_thermal_database.xlsx').read_bytes(),
                          file_name='sample_thermal_database.xlsx')
 
 st.sidebar.header("Upload")
@@ -417,3 +417,4 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
+
