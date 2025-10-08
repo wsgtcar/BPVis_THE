@@ -37,8 +37,8 @@ def load_xlsx(bytes_):
 
 def _reconstruct_timestamp_from_doy_hour(df: pd.DataFrame) -> pd.Series:
     """If a sheet has columns 'doy' and 'hour' but no timestamp, reconstruct a datetime index.
-    DIN 4108 simulations must start on a Monday -> use 2018-01-01 (Monday)."""
-    base = pd.Timestamp("2018-01-01 00:00:00")  # Monday
+    DIN 4108 simulations must start on a Monday -> use 2010-01-01 (Monday)."""
+    base = pd.Timestamp("2010-01-01 00:00:00")  # Monday
     doy = pd.to_numeric(df["doy"], errors="coerce")
     hour = pd.to_numeric(df["hour"], errors="coerce")
     ts = base + pd.to_timedelta(doy - 1, unit="D") + pd.to_timedelta(hour, unit="H")
@@ -163,7 +163,7 @@ def occ_series(idx: pd.DatetimeIndex, use_type: str) -> pd.Series:
         return pd.Series(True, index=idx)
     wk = idx.weekday;
     hr = idx.hour
-    occ = (wk <= 4) & (hr >= 7) & (hr < 18)
+    occ = (wk <= 4) & (hr >= 7) & (hr < 17)
     return pd.Series(occ, index=idx)
 
 
@@ -418,6 +418,7 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
+
 
 
 
