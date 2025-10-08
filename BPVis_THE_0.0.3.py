@@ -19,7 +19,7 @@ st.sidebar.image("Pamo_Icon_Black.png", width=80)
 st.sidebar.write("## BPVis THE")
 st.sidebar.write("Version 0.0.1")
 
-st.title("Summer Overheating")
+st.title("Thermal Comfort Analysis")
 
 COLOR_OK = "#22c55e";
 COLOR_BAD = "#ef4444";
@@ -37,8 +37,8 @@ def load_xlsx(bytes_):
 
 def _reconstruct_timestamp_from_doy_hour(df: pd.DataFrame) -> pd.Series:
     """If a sheet has columns 'doy' and 'hour' but no timestamp, reconstruct a datetime index.
-    DIN 4108 simulations must start on a Monday -> use 2010-01-01 (Monday)."""
-    base = pd.Timestamp("2010-01-01 00:00:00")  # Monday
+    DIN 4108 simulations must start on a Monday -> use 2018-01-01 (Monday)."""
+    base = pd.Timestamp("2018-01-01 00:00:00")  # Monday
     doy = pd.to_numeric(df["doy"], errors="coerce")
     hour = pd.to_numeric(df["hour"], errors="coerce")
     ts = base + pd.to_timedelta(doy - 1, unit="D") + pd.to_timedelta(hour, unit="H")
@@ -163,7 +163,7 @@ def occ_series(idx: pd.DatetimeIndex, use_type: str) -> pd.Series:
         return pd.Series(True, index=idx)
     wk = idx.weekday;
     hr = idx.hour
-    occ = (wk <= 4) & (hr >= 7) & (hr <= 18)
+    occ = (wk <= 4) & (hr >= 7) & (hr < 18)
     return pd.Series(occ, index=idx)
 
 
@@ -234,6 +234,9 @@ with st.sidebar.expander("DIN 4108 Settings", expanded=False):
     # derive defaults from selected zone + global use type (override option removed)
     limit_C, cap_DH, season_start, season_end = limits_for_zone_and_use(cz, use_type_global)
 
+with st.sidebar.expander("DIN 16798 Settings", expanded=False):
+    cz_din16798 = st.selectbox("Climate Zone (DIN 16798)", ["TRY 1", "TRY 2", "TRY 3", "TRY 4", "TRY 5", "TRY 6", "TRY 7", "TRY 8", "TRY 9", "TRY 10", "TRY 11", "TRY 12", "TRY 13"], index=0)
+
 
 st.sidebar.markdown("---")
 
@@ -279,110 +282,117 @@ else:
     # Compute metrics
     out = compute_4108(dfrA, limit_r, season_start_r, season_end_r, occ)
 
-    st.markdown("---")
-    # KPIs
-    st.metric("Room", str(room_choice))
-    st.metric("DIN 4108 Climate Zone", cz)
-    k1, k2, k3, k4 = st.columns(4)
-    k1.metric("Limit (°C)", f"{limit_r:.1f}")
-    k2.metric("Hours Above Threshold", f"{out['hours']:}")
-    k3.metric("Degree-Hours (°K.h)", f"{out['dh']:.1f}")
-    status = "PASS" if out["dh"] <= cap_dh_r else "FAIL"
-    margin = cap_dh_r - out["dh"]
-    k4.metric(label=f"Compliance (cap {cap_dh_r:.0f} K·h)", value=status, delta=f"{margin:+.0f} K·h vs cap")
+    tab1, tab2 = st.tabs(["DIN 4108 - Summer Overheating", "DIN EN 16798 - Thermal Comfort"])
+    with tab1:
 
-    # Heatmaps (no aggregation) with fixed temp color scale 15..35 °C
-    st.markdown("---")
-    st.subheader("Hourly Results")
+        # KPIs
+        st.metric("Room", str(room_choice))
+        st.metric("DIN 4108 Climate Zone", cz)
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Limit (°C)", f"{limit_r:.1f}")
+        k2.metric("Hours Above Threshold", f"{out['hours']:}")
+        k3.metric("Degree-Hours (°K.h)", f"{out['dh']:.1f}")
+        status = "PASS" if out["dh"] <= cap_dh_r else "FAIL"
+        margin = cap_dh_r - out["dh"]
+        k4.metric(label=f"Compliance (cap {cap_dh_r:.0f} K·h)", value=status, delta=f"{margin:+.0f} K·h vs cap")
 
-    dfh = dfrA.copy()
-    dfh["doy"] = dfh["timestamp"].dt.dayofyear
-    dfh["hour"] = dfh["timestamp"].dt.hour
+        # Heatmaps (no aggregation) with fixed temp color scale 15..35 °C
+        st.markdown("---")
 
-    hours = np.arange(0, 24)
-    days = np.arange(1, 367)  # 1..366
+        st.subheader("Hourly Results")
 
-    # 1) Temperature imshow (no aggregation) fixed z range
-    grid_T = (
-        dfh.pivot_table(index="hour", columns="doy", values="t_op_C", aggfunc="first")
-        .reindex(index=hours, columns=days)
-    )
-    fig_t = px.imshow(
-        grid_T,
-        origin="lower",
-        aspect="auto",
-        color_continuous_scale="thermal",
-        zmin=16, zmax=30,
-        title="Operative Temperature (°C)",
-        labels=dict(x="Day of Year", y="Hour", color="°C")
-    )
-    fig_t.update_layout(height=600)
-    st.plotly_chart(fig_t, use_container_width=True)
+        dfh = dfrA.copy()
+        dfh["doy"] = dfh["timestamp"].dt.dayofyear
+        dfh["hour"] = dfh["timestamp"].dt.hour
 
-    # 2) Degree-hours imshow (0 outside occupied+season)
-    in_season = season_mask(idx, season_start_r, season_end_r)
-    mask = occ & in_season
-    dh_hourly = (np.maximum(s_room - limit_r, 0.0)).astype(float)
-    dfh["dh"] = np.where(mask.values, dh_hourly, 0.0)
+        hours = np.arange(0, 24)
+        days = np.arange(1, 367)  # 1..366
 
-    grid_DH = (
-        dfh.pivot_table(index="hour", columns="doy", values="dh", aggfunc="first")
-        .reindex(index=hours, columns=days)
-        .fillna(0.0)
-    )
-    fig_e = px.imshow(
-        grid_DH,
-        origin="lower",
-        aspect="auto",
-        color_continuous_scale="Reds",
-        title="Hourly Degree-Hours Above Limit (°K.h)",
-        labels=dict(x="Day of Year", y="Hour", color="K·h")
-    )
-    fig_e.update_layout(height=600)
-    st.plotly_chart(fig_e, use_container_width=True)
+        # 1) Temperature imshow (no aggregation) fixed z range
+        grid_T = (
+            dfh.pivot_table(index="hour", columns="doy", values="t_op_C", aggfunc="first")
+            .reindex(index=hours, columns=days)
+        )
+        fig_t = px.imshow(
+            grid_T,
+            origin="lower",
+            aspect="auto",
+            color_continuous_scale="thermal",
+            zmin=16, zmax=30,
+            title="Operative Temperature (°C)",
+            labels=dict(x="Day of Year", y="Hour", color="°C")
+        )
+        fig_t.update_layout(height=600)
+        st.plotly_chart(fig_t, use_container_width=True)
 
+        # 2) Degree-hours imshow (0 outside occupied+season)
+        in_season = season_mask(idx, season_start_r, season_end_r)
+        mask = occ & in_season
+        dh_hourly = (np.maximum(s_room - limit_r, 0.0)).astype(float)
+        dfh["dh"] = np.where(mask.values, dh_hourly, 0.0)
 
-    st.markdown("---")
-    st.write("### Monthly Results")
-    # Monthly bars
-    a, b = st.columns(2)
-    with a:
-        fig_h = px.bar(out["monthly"], x="month", y="hours_above",
-                       title="Monthly Hours Above Limit",
-                       text_auto=True, height=600)
-        fig_h.update_traces(marker_color=COLOR_RED, textfont_color="white")
-        fig_h.update_layout(xaxis_title="", yaxis_title="hours", showlegend=False)
-        st.plotly_chart(fig_h, use_container_width=True)
-    with b:
-        fig_dh = px.bar(out["monthly"], x="month", y="dh",
-                        title="Monthly Degree-Hours Above Limit",
-                        text_auto=".1f", height=600)
-        fig_dh.update_traces(marker_color=COLOR_PURPLE, textfont_color="white")
-        fig_dh.update_layout(xaxis_title="", yaxis_title="K·h", showlegend=False)
-        st.plotly_chart(fig_dh, use_container_width=True)
-
-    # ------------------ Temp distribution bars (occupied hours only) ------------------
-    st.markdown("---")
-    st.write("### Operative Temperature Distribution")
-    temp_occ = s_room[occ]
-    bins = [-np.inf, 20, 22, 24, 26, 28, 30, np.inf]
-    labels = ["<20°C", "20–22°C", "22–24°C", "24–26°C", "26–28°C", "28–30°C", ">30°C"]
-    cats = pd.cut(temp_occ, bins=bins, labels=labels, right=False, include_lowest=True)
-    dist = cats.value_counts().reindex(labels, fill_value=0).reset_index()
-    dist.columns = ["Temp Range", "Hours"]
-
-    fig_dist = px.bar(
-        dist, x="Temp Range", y="Hours",
-        title="Hours per Operative Temperature Range",
-        text_auto=True, height=600
-    )
-    fig_dist.update_traces(marker_color="#5A73A5", textfont_color="white")
-    fig_dist.update_layout(xaxis_title="", yaxis_title="hours", showlegend=False)
+        grid_DH = (
+            dfh.pivot_table(index="hour", columns="doy", values="dh", aggfunc="first")
+            .reindex(index=hours, columns=days)
+            .fillna(0.0)
+        )
+        fig_e = px.imshow(
+            grid_DH,
+            origin="lower",
+            aspect="auto",
+            color_continuous_scale="Reds",
+            title="Hourly Degree-Hours Above Limit (°K.h)",
+            labels=dict(x="Day of Year", y="Hour", color="K·h")
+        )
+        fig_e.update_layout(height=600)
+        st.plotly_chart(fig_e, use_container_width=True)
 
 
-    st.plotly_chart(fig_dist, use_container_width=True)
+        st.markdown("---")
+        st.write("### Monthly Results")
+        # Monthly bars
+        a, b = st.columns(2)
+        with a:
+            fig_h = px.bar(out["monthly"], x="month", y="hours_above",
+                           title="Monthly Hours Above Limit",
+                           text_auto=True, height=600)
+            fig_h.update_traces(marker_color=COLOR_RED, textfont_color="white")
+            fig_h.update_layout(xaxis_title="", yaxis_title="hours", showlegend=False)
+            st.plotly_chart(fig_h, use_container_width=True)
+        with b:
+            fig_dh = px.bar(out["monthly"], x="month", y="dh",
+                            title="Monthly Degree-Hours Above Limit",
+                            text_auto=".1f", height=600)
+            fig_dh.update_traces(marker_color=COLOR_PURPLE, textfont_color="white")
+            fig_dh.update_layout(xaxis_title="", yaxis_title="K·h", showlegend=False)
+            st.plotly_chart(fig_dh, use_container_width=True)
 
-    # Save Project (writes settings back)
+        # ------------------ Temp distribution bars (occupied hours only) ------------------
+        st.markdown("---")
+        st.write("### Operative Temperature Distribution")
+        temp_occ = s_room[occ]
+        bins = [-np.inf, 20, 22, 24, 26, 28, 30, np.inf]
+        labels = ["<20°C", "20–22°C", "22–24°C", "24–26°C", "26–28°C", "28–30°C", ">30°C"]
+        cats = pd.cut(temp_occ, bins=bins, labels=labels, right=False, include_lowest=True)
+        dist = cats.value_counts().reindex(labels, fill_value=0).reset_index()
+        dist.columns = ["Temp Range", "Hours"]
+
+        fig_dist = px.bar(
+            dist, x="Temp Range", y="Hours",
+            title="Hours per Operative Temperature Range",
+            text_auto=True, height=600
+        )
+        fig_dist.update_traces(marker_color="#5A73A5", textfont_color="white")
+        fig_dist.update_layout(xaxis_title="", yaxis_title="hours", showlegend=False)
+
+
+        st.plotly_chart(fig_dist, use_container_width=True)
+
+        # Save Project (writes settings back)
+
+    with tab2:
+
+        st.write("### This Module is under Development")
 
     st.markdown("---")
     with st.sidebar:
@@ -418,22 +428,3 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
