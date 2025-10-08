@@ -163,7 +163,7 @@ def occ_series(idx: pd.DatetimeIndex, use_type: str) -> pd.Series:
         return pd.Series(True, index=idx)
     wk = idx.weekday;
     hr = idx.hour
-    occ = (wk <= 4) & (hr >= 7) & (hr < 18)
+    occ = (wk <= 4) & (hr >= 7) & (hr <= 18)
     return pd.Series(occ, index=idx)
 
 
@@ -418,6 +418,7 @@ else:
             st.caption("*email:* rodrigo.carvalho@wernersobek.com")
             st.caption("*Tel* +49.40.6963863-14")
             st.caption("*Mob* +49.171.964.7850")
+
 
 
 
